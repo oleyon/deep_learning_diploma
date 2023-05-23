@@ -1,1 +1,5 @@
 /.venv
+/playground/data
+/diploma/data
+/gpt_playground/dataset
+__pycache__
