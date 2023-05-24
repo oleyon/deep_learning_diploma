@@ -3,6 +3,7 @@ from torch import nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import tqdm
+from vgg_loss import VGGLoss
 from image_dataset import ImageDataset
 from autoencoder_upscale_model import AutoencoderUpscaleModel
 from my_upscale_model import UpscaleModel
@@ -47,7 +48,7 @@ def main():
 
     # Create model save path
     #MODEL_NAME = "autoencoder_upscale.pth"
-    MODEL_NAME = "my_upscale.pth"
+    MODEL_NAME = "my_upscale_v3.pth"
     MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
 
 
@@ -80,7 +81,7 @@ def main():
                               shuffle=True) # shuffle the data?
 
     test_data_loader = DataLoader(dataset=test_data, 
-                                batch_size=8, # how many samples per batch?
+                                batch_size=4, # how many samples per batch?
                                 num_workers=1, # how many subprocesses to use for data loading? (higher = more)
                                 shuffle=False) # shuffle the data?
     
@@ -88,19 +89,20 @@ def main():
     model = UpscaleModel()
     
     if MODEL_SAVE_PATH.exists():
+        print("loading existing model")
         model.load_state_dict(torch.load(MODEL_SAVE_PATH))
     
     # torch.save(obj=model.state_dict(), # only saving the state_dict() only saves the learned parameters
     #         f=MODEL_SAVE_PATH)
     #return
-    loss_fn = nn.MSELoss()
+    loss_fn = VGGLoss(device="cpu")
     
     optimizer = torch.optim.Adam(model.parameters(),
-                                 lr=0.001)
+                                 lr=0.1)
     
     train_time_start_on_gpu = timer()
 
-    epochs = 3
+    epochs = 1
     for epoch in range(epochs):
         print(f"Epoch: {epoch}\n---------")
         train_step(data_loader=train_data_loader, 
@@ -138,7 +140,7 @@ def train_step(model: torch.nn.Module,
     model.to(device)
     for batch, y in tqdm.tqdm(enumerate(data_loader)):
         # Send data to GPU
-        X = downsample_image(y)
+        X = downsample_image(y, factor=4)
         X, y = X.to(device), y.to(device)
 
         # 1. Forward pass
@@ -146,6 +148,7 @@ def train_step(model: torch.nn.Module,
 
         # 2. Calculate loss
         loss = loss_fn(y_pred, y)
+        print(f"loss = {loss}")
         train_loss += loss
 
         # 3. Optimizer zero grad
@@ -171,7 +174,7 @@ def test_step(data_loader: torch.utils.data.DataLoader,
     # Turn on inference context manager
     with torch.inference_mode(): 
         for y in data_loader:
-            X = downsample_image(y)
+            X = downsample_image(y, factor=4)
             # Send data to GPU
             X, y = X.to(device), y.to(device)
             

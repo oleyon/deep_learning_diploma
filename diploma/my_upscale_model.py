@@ -17,13 +17,15 @@ class UpscaleModel(nn.Module):
         )
 
         # # Upsampling layers
-        # self.upsample_layers = nn.Sequential(
-        #     nn.ConvTranspose2d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1),
-        #     nn.PReLU()
-        #     # Add more upsampling layers as needed
-        # )
+        self.upsample_layers = nn.Sequential(
+            nn.ConvTranspose2d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1),
+            nn.PReLU(),
+            nn.ConvTranspose2d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1),
+            nn.PReLU()
+            # Add more upsampling layers as needed
+        )
         
-        self.upsample = nn.Upsample(scale_factor=2, mode="bilinear")
+        #self.upsample = nn.Upsample(scale_factor=2, mode="bilinear")
 
         # Final convolutional layer
         self.final_layer = nn.Sequential(
@@ -35,6 +37,6 @@ class UpscaleModel(nn.Module):
 
     def forward(self, x):
         x = self.conv_layers(x)
-        x = self.upsample(x)
+        x = self.upsample_layers(x)
         x = self.final_layer(x)
         return x
