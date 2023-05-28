@@ -3,7 +3,7 @@ from torch import nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import tqdm
-from vgg_loss import VGGLoss
+from vgg_loss import *
 from image_dataset import ImageDataset
 from autoencoder_upscale_model import AutoencoderUpscaleModel
 from my_upscale_model import UpscaleModel
@@ -11,6 +11,7 @@ from timeit import default_timer as timer
 from pathlib import Path
 import os
 import torch.nn.functional as F
+from my_upscale_model2 import UpscaleModel2
 
     
 def print_train_time(start: float, end: float, device: torch.device = None):
@@ -48,7 +49,7 @@ def main():
 
     # Create model save path
     #MODEL_NAME = "autoencoder_upscale.pth"
-    MODEL_NAME = "my_upscale_v3.pth"
+    MODEL_NAME = "my_upscale_v4.pth"
     MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
 
 
@@ -86,7 +87,7 @@ def main():
                                 shuffle=False) # shuffle the data?
     
     #model = AutoencoderUpscaleModel()
-    model = UpscaleModel()
+    model = UpscaleModel2()
     
     if MODEL_SAVE_PATH.exists():
         print("loading existing model")
@@ -95,14 +96,15 @@ def main():
     # torch.save(obj=model.state_dict(), # only saving the state_dict() only saves the learned parameters
     #         f=MODEL_SAVE_PATH)
     #return
-    loss_fn = VGGLoss(device="cpu")
+    #loss_fn = VGGPerceptualLoss_1().to("cuda")
+    loss_fn = nn.MSELoss()
     
     optimizer = torch.optim.Adam(model.parameters(),
-                                 lr=0.1)
+                                 lr=0.00005)
     
     train_time_start_on_gpu = timer()
 
-    epochs = 1
+    epochs = 5
     for epoch in range(epochs):
         print(f"Epoch: {epoch}\n---------")
         train_step(data_loader=train_data_loader, 
@@ -148,7 +150,7 @@ def train_step(model: torch.nn.Module,
 
         # 2. Calculate loss
         loss = loss_fn(y_pred, y)
-        print(f"loss = {loss}")
+        #print(f"loss = {loss}")
         train_loss += loss
 
         # 3. Optimizer zero grad

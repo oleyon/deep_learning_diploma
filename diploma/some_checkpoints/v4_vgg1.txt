@@ -1,0 +1,191 @@
+Epoch: 0
+---------
+100it [01:04,  1.54it/s]
+Train loss: 3.25572
+Test loss: 2.45547
+Epoch: 1
+---------
+100it [01:01,  1.63it/s]
+Train loss: 2.28225
+Test loss: 2.19797
+Epoch: 2
+---------
+100it [01:01,  1.63it/s]
+Train loss: 2.20840
+Test loss: 2.27328
+Epoch: 3
+100it [01:01,  1.63it/s]
+Train loss: 2.16206
+Test loss: 2.05058
+Epoch: 4
+---------
+100it [01:01,  1.63it/s]
+Train loss: 2.13912
+Test loss: 2.07691
+Train time on cuda: 357.664 seconds
+Saving model to: diploma\models\my_upscale_v4.pth
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> & d:/oleyon/github_repo/deep_learning_diploma/.venv/Scripts/python.exe d:/oleyon/github_repo/deep_learning_diploma/diploma/train_my_model.py
+loading existing model
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG16_Weights.IMAGENET1K_V1`. You can also use `weights=VGG16_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch: 0
+---------
+100it [01:04,  1.55it/s]
+Train loss: 2.23433
+Test loss: 2.04503
+Epoch: 1
+---------
+100it [01:01,  1.63it/s]
+Train loss: 2.12627
+Test loss: 2.02799
+Epoch: 2
+---------
+100it [01:01,  1.63it/s]
+Train loss: 2.04733
+Test loss: 1.95883
+Epoch: 3
+---------
+100it [01:01,  1.63it/s]
+Train loss: 1.98103
+Test loss: 1.96144
+Epoch: 4
+---------
+100it [01:01,  1.62it/s]
+Train loss: 2.03679
+Test loss: 1.98740
+Epoch: 5
+---------
+100it [01:01,  1.63it/s]
+Train loss: 1.97361
+Test loss: 1.96063
+Epoch: 6
+---------
+100it [01:01,  1.63it/s]
+Train loss: 1.94940
+Test loss: 1.87651
+Epoch: 7
+---------
+100it [01:01,  1.63it/s]
+Train loss: 1.94457
+Test loss: 1.94382
+Epoch: 8
+100it [01:01,  1.63it/s]
+Train loss: 1.96301
+Test loss: 2.07463
+Epoch: 9
+---------
+100it [01:01,  1.63it/s]
+Train loss: 1.94628
+Test loss: 1.99734
+Train time on cuda: 711.678 seconds
+Saving model to: diploma\models\my_upscale_v4.pth
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> & d:/oleyon/github_repo/deep_learning_diploma/.venv/Scripts/python.exe d:/oleyon/github_repo/deep_learning_diploma/diploma/train_my_model.py
+loading existing model
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+ future. The current behavior is equivalent to passing `weights=VGG16_Weights.IMAGENET1K_V1`. You can also use `weights=VGG16_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch: 0
+---------
+100it [01:05,  1.53it/s]
+Train loss: 1.86189
+Test loss: 1.81522
+Train time on cuda: 74.591 seconds
+Saving model to: diploma\models\my_upscale_v4.pth
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> & d:/oleyon/github_repo/deep_learning_diploma/.venv/Scripts/python.exe d:/oleyon/github_repo/deep_learning_diploma/diploma/my_upscale_model2.py
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> & d:/oleyon/github_repo/deep_learning_diploma/.venv/Scripts/python.exe d:/oleyon/github_repo/deep_learning_diploma/diploma/train_my_model.py
+loading existing model
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG16_Weights.IMAGENET1K_V1`. You can also use `weights=VGG16_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch: 0
+---------
+100it [01:04,  1.54it/s]
+Train loss: 1.86003
+Test loss: 1.77715
+Train time on cuda: 74.088 seconds
+Saving model to: diploma\models\my_upscale_v4.pth
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> & d:/oleyon/github_repo/deep_learning_diploma/.venv/Scripts/python.exe d:/oleyon/github_repo/deep_learning_diploma/diploma/train_my_model.py
+loading existing model
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG16_Weights.IMAGENET1K_V1`. You can also use `weights=VGG16_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch: 0
+---------
+100it [01:04,  1.54it/s]
+Train loss: 1.82675
+Test loss: 1.81783
+Train time on cuda: 74.300 seconds
+Saving model to: diploma\models\my_upscale_v4.pth
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> & d:/oleyon/github_repo/deep_learning_diploma/.venv/Scripts/python.exe d:/oleyon/github_repo/deep_learning_diploma/diploma/train_my_model.py
+loading existing model
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG16_Weights.IMAGENET1K_V1`. You can also use `weights=VGG16_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch: 0
+---------
+100it [01:04,  1.54it/s]
+Train loss: 1.83915
+Test loss: 1.82830
+Epoch: 1
+---------
+100it [01:01,  1.62it/s]
+Train loss: 1.83048
+Test loss: 1.73993
+Epoch: 2
+---------
+100it [01:01,  1.62it/s]
+Train loss: 1.86146
+Test loss: 1.75963
+Epoch: 3
+---------
+100it [01:01,  1.62it/s]
+Train loss: 1.83519
+Test loss: 1.73639
+Epoch: 4
+---------
+100it [01:01,  1.62it/s]
+Train loss: 1.82482
+Test loss: 1.76238
+Epoch: 5
+---------
+100it [01:01,  1.63it/s]
+Train loss: 1.84588
+Test loss: 1.73695
+Epoch: 6
+---------
+100it [01:01,  1.62it/s]
+Train loss: 1.85644
+Test loss: 1.69201
+Epoch: 7
+---------
+100it [01:01,  1.62it/s]
+Train loss: 1.79745
+Test loss: 1.73775
+Epoch: 8
+100it [01:01,  1.62it/s]
+Train loss: 1.79055
+Test loss: 1.77894
+Epoch: 9
+---------
+100it [01:01,  1.62it/s]
+Train loss: 1.81641
+Test loss: 1.78967
+Train time on cuda: 712.914 seconds
+Saving model to: diploma\models\my_upscale_v4.pth
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> & d:/oleyon/github_repo/deep_learning_diploma/.venv/Scripts/python.exe d:/oleyon/github_repo/deep_learning_diploma/diploma/train_my_model.py
+loading existing model
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+D:\oleyon\github_repo\deep_learning_diploma\.venv\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=VGG16_Weights.IMAGENET1K_V1`. You can also use `weights=VGG16_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch: 0
+---------
+100it [01:04,  1.54it/s]
+Train loss: 1.79413
+Test loss: 1.74727
+Train time on cuda: 74.189 seconds
+Saving model to: diploma\models\my_upscale_v4.pth
+(.venv) PS D:\oleyon\github_repo\deep_learning_diploma> 

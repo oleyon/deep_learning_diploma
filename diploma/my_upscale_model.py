@@ -20,6 +20,9 @@ class UpscaleModel(nn.Module):
         self.upsample_layers = nn.Sequential(
             nn.ConvTranspose2d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1),
             nn.PReLU(),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=1, padding=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
             nn.ConvTranspose2d(in_channels=64, out_channels=64, kernel_size=4, stride=2, padding=1),
             nn.PReLU()
             # Add more upsampling layers as needed
@@ -32,7 +35,10 @@ class UpscaleModel(nn.Module):
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=1, padding=2),
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=3, kernel_size=5, stride=1, padding=2),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=5, stride=1, padding=2),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=64, out_channels=3, kernel_size=5, stride=1, padding=2)
         )
 
     def forward(self, x):
