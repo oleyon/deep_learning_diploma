@@ -17,5 +17,4 @@ class ImageDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
-
         return image

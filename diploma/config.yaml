@@ -1,0 +1,36 @@
+model:
+  name: my_model
+  path: diploma/models/my_model_re.pth
+  #input_size: 256
+  hidden_size: 512
+  #output_size: 10
+  upsample_factor: 4
+
+train:
+  device: cuda
+  epochs: 50
+  learning_rate: 0.0001
+  batch_size: 8
+  optimizer:
+    name: Adam
+    weight_decay: 0.0001
+
+dataset:
+  name: DIV2K
+  data_path: diploma/data/DIV2K
+  transform:
+    - RandomHorizontalFlip
+    - RandomCrop:
+        size: 256
+    - ToTensor
+
+
+
+# scheduler:
+#   name: StepLR
+#   step_size: 10
+#   gamma: 0.1
+
+logging:
+  log_dir: diploma/log
+  save_dir: /path/to/checkpoints
