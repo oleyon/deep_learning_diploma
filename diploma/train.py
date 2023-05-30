@@ -99,7 +99,7 @@ def main():
 
     for epoch in range(epochs):
         print(f"Epoch: {epoch}\n---------")
-        train_step(data_loader=train_data_loader, 
+        train_step(data_loader=train_data_loader,
             model=model,
             loss_fn=loss_fn,
             optimizer=optimizer,

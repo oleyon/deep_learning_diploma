@@ -15,38 +15,50 @@ class TrainingStatisticsLogger:
         self.ssim.append(ssim)
         self.psnr.append(psnr)
 
-    def save_to_csv(self, filename):
+    def save_to_csv(self, filename, append=False):
         path = Path(filename)
-        path.parent.mkdir(parents=True,
-                          exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        mode = 'a' if append else 'w'
+
         data = [{'Epoch': epoch,
-                'Loss': loss,
-                'Training Time': time,
-                'SSIM': ssim,
-                'PSNR': psnr} for epoch, loss, time, ssim, psnr in
+                 'Loss': loss,
+                 'Training Time': time,
+                 'SSIM': ssim,
+                 'PSNR': psnr} for epoch, loss, time, ssim, psnr in
                 zip(range(1, len(self.epoch_loss) + 1),
                     self.epoch_loss,
                     self.epoch_training_time,
                     self.ssim,
                     self.psnr)]
 
-        with open(filename, 'w', newline='') as csvfile:
+        with open(filename, mode, newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=data[0].keys())
-            writer.writeheader()
+            if not append:
+                writer.writeheader()
             writer.writerows(data)
 
-    def save_to_json(self, filename):
+    def save_to_json(self, filename, append=False):
         path = Path(filename)
-        path.parent.mkdir(parents=True,
-                          exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        mode = 'a' if append else 'w'
+
         data = {'Epoch': list(range(1, len(self.epoch_loss) + 1)),
                 'Loss': self.epoch_loss,
                 'Training Time': self.epoch_training_time,
                 'SSIM': self.ssim,
                 'PSNR': self.psnr}
 
-        with open(filename, 'w') as jsonfile:
-            json.dump(data, jsonfile)
+        with open(filename, mode) as jsonfile:
+            if append and path.exists() and path.stat().st_size > 0:
+                existing_data = json.load(jsonfile)
+                existing_data['Epoch'].extend(data['Epoch'])
+                existing_data['Loss'].extend(data['Loss'])
+                existing_data['Training Time'].extend(data['Training Time'])
+                existing_data['SSIM'].extend(data['SSIM'])
+                existing_data['PSNR'].extend(data['PSNR'])
+                json.dump(existing_data, jsonfile)
+            else:
+                json.dump(data, jsonfile)
 
     def load_from_csv(self, filename):
         with open(filename, 'r') as csvfile:
