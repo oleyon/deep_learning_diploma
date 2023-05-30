@@ -1,6 +1,6 @@
 model:
-  name: my_model
-  path: diploma/models/my_model_re.pth
+  name: autoencoder_upsampler
+  path: diploma/models/autoencoder_upsampler.pth
   #input_size: 256
   hidden_size: 512
   #output_size: 10
@@ -8,8 +8,8 @@ model:
 
 train:
   device: cuda
-  epochs: 50
-  learning_rate: 0.0001
+  epochs: 1
+  learning_rate: 0.001
   batch_size: 8
   optimizer:
     name: Adam

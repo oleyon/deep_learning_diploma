@@ -18,7 +18,7 @@ class ResBlock(nn.Module):
                                stride=1,
                                padding=1)
         self.prelu = nn.PReLU()
-        self.bn_2 = nn.BatchNorm2d(num_features=in_channels)
+        self.bn_2 = nn.BatchNorm2d(num_features=out_channels)
 
     def forward(self, x):
         out = self.conv_1(x)
@@ -26,24 +26,23 @@ class ResBlock(nn.Module):
         out = self.prelu(out)
         out = self.conv_2(out)
         out = self.bn_2(out)
-        out = out + x
+        #out = out + x
         return out
         
 class UpsampleBlock(nn.Module):
     def __init__(self, in_channels) -> None:
         super(UpsampleBlock, self).__init__()
         self.upsample = nn.ConvTranspose2d(in_channels=in_channels,
-                                           out_channels=in_channels/2,
+                                           out_channels=in_channels//2,
                                            kernel_size=3,
                                            padding=1,
-                                           output_padding=1,
                                            stride=2)
-        self.conv = nn.Conv2d(in_channels=in_channels/2,
-                              out_channels=in_channels/2,
+        self.conv = nn.Conv2d(in_channels=in_channels//2,
+                              out_channels=in_channels//2,
                               kernel_size=3,
                               stride=1,
                               padding=1)
-        self.bn = nn.BatchNorm2d(num_features=in_channels/2)
+        self.bn = nn.BatchNorm2d(num_features=in_channels//2)
         self.relu = nn.ReLU()
     
     def forward(self, x):

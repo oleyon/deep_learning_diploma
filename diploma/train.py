@@ -4,6 +4,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import tqdm
 import yaml
+from autoencoder_upsampler import AutoencoderUpsampler
 from metrics import PSNR, SSIM
 from train_statistics import TrainingStatisticsLogger
 from vgg_loss import *
@@ -46,7 +47,7 @@ def main():
     train_path = dataset_path + '/train'
     test_path = dataset_path + '/valid'
     device = config['train']['device']
-    upsample_factor = config['model']['upsample_factor']
+    #upsample_factor = config['model']['upsample_factor']
     weight_decay = config['train']['optimizer']['weight_decay']
     log_dir = config['logging']['log_dir']
     
@@ -76,7 +77,7 @@ def main():
                                 num_workers=1,
                                 shuffle=False)
 
-    model = UpscaleModel2()
+    model = AutoencoderUpsampler()
 
     if model_path.exists():
         print("loading existing model")
