@@ -13,7 +13,7 @@ train:
   batch_size: 8
   optimizer:
     name: Adam
-    weight_decay: 0.0001
+    weight_decay: 0
 
 dataset:
   name: DIV2K
@@ -32,5 +32,5 @@ dataset:
 #   gamma: 0.1
 
 logging:
-  log_dir: diploma/log
+  log_dir: diploma/log/
   save_dir: /path/to/checkpoints

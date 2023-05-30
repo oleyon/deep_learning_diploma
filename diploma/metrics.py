@@ -29,6 +29,7 @@ class SSIM(nn.Module):
         return window.expand(channels, 1, window_size, window_size)
 
     def forward(self, img1, img2):
+        self.window = self.window.to(img1.device)
         mu1 = F.conv2d(img1, self.window, padding=self.window_size // 2, groups=self.channels)
         mu2 = F.conv2d(img2, self.window, padding=self.window_size // 2, groups=self.channels)
 

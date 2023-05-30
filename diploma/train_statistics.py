@@ -1,5 +1,6 @@
 import csv
 import json
+from pathlib import Path
 
 class TrainingStatisticsLogger:
     def __init__(self):
@@ -15,19 +16,30 @@ class TrainingStatisticsLogger:
         self.psnr.append(psnr)
 
     def save_to_csv(self, filename):
-        data = {'Epoch': range(1, len(self.epoch_loss) + 1),
-                'Loss': self.epoch_loss,
-                'Training Time': self.epoch_training_time,
-                'SSIM': self.ssim,
-                'PSNR': self.psnr}
+        path = Path(filename)
+        path.parent.mkdir(parents=True,
+                          exist_ok=True)
+        data = [{'Epoch': epoch,
+                'Loss': loss,
+                'Training Time': time,
+                'SSIM': ssim,
+                'PSNR': psnr} for epoch, loss, time, ssim, psnr in
+                zip(range(1, len(self.epoch_loss) + 1),
+                    self.epoch_loss,
+                    self.epoch_training_time,
+                    self.ssim,
+                    self.psnr)]
 
         with open(filename, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=data.keys())
+            writer = csv.DictWriter(csvfile, fieldnames=data[0].keys())
             writer.writeheader()
             writer.writerows(data)
 
     def save_to_json(self, filename):
-        data = {'Epoch': range(1, len(self.epoch_loss) + 1),
+        path = Path(filename)
+        path.parent.mkdir(parents=True,
+                          exist_ok=True)
+        data = {'Epoch': list(range(1, len(self.epoch_loss) + 1)),
                 'Loss': self.epoch_loss,
                 'Training Time': self.epoch_training_time,
                 'SSIM': self.ssim,

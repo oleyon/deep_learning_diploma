@@ -4,8 +4,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import tqdm
 import yaml
-from diploma.metrics import PSNR, SSIM
-from diploma.statistics import TrainingStatisticsLogger
+from metrics import PSNR, SSIM
+from train_statistics import TrainingStatisticsLogger
 from vgg_loss import *
 from image_dataset import ImageDataset
 from autoencoder_upscale_model import AutoencoderUpscaleModel
@@ -15,6 +15,7 @@ from pathlib import Path
 import os
 import torch.nn.functional as F
 from my_upscale_model2 import UpscaleModel2
+from custom_loss import *
 
     
 def print_train_time(start: float, end: float, device: torch.device = None):
@@ -33,7 +34,7 @@ def downsample_image(image, factor=2):
     return downsampled_image
 
 def main():
-    with open('config.yaml', 'r') as yamlfile:
+    with open('diploma/config.yaml', 'r') as yamlfile:
         config = yaml.safe_load(yamlfile)
 
     model_path = Path(config['model']['path'])
@@ -47,47 +48,23 @@ def main():
     device = config['train']['device']
     upsample_factor = config['model']['upsample_factor']
     weight_decay = config['train']['optimizer']['weight_decay']
+    log_dir = config['logging']['log_dir']
     
-    model_path.mkdir(parents=True,
-                    exist_ok=True
-    )
+    model_path.parent.mkdir(parents=True,
+                    exist_ok=True)
+
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-    # Access the transform configurations
-    transform_config = config['dataset']['transform']
-
-    # Initialize an empty list to store the transforms
-    transform_list = []
-
-    # Iterate over each transform configuration
-    for transform_name, transform_params in transform_config.items():
-        if transform_params is None:
-            # If transform has no parameters, create an instance without arguments
-            transform = getattr(transforms, transform_name)()
-        else:
-            # If transform has parameters, create an instance with the provided arguments
-            transform = getattr(transforms, transform_name)(**transform_params)
-
-        # Add the transform to the list
-        transform_list.append(transform)
-
-    # Create a composed transform using the list of transforms
-    composed_transform = transforms.Compose(transform_list)
-
-
-
-    
-    # # Define the transformation to be applied to each image
-    # transform = transforms.Compose([
-    #     transforms.RandomCrop(config['dataset']['transform'][1]['size']),
-    #     transforms.RandomHorizontalFlip(),
-    #     transforms.ToTensor()
-    # ])
+    # Define the transformation to be applied to each image
+    transform = transforms.Compose([
+        transforms.RandomCrop(config['dataset']['transform'][1]['RandomCrop']['size']),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor()
+    ])
 
     # Create the ImageFolder dataset
-    train_data = ImageDataset(train_path, transform=composed_transform)
-    test_data = ImageDataset(test_path, transform=composed_transform)
+    train_data = ImageDataset(train_path, transform=transform)
+    test_data = ImageDataset(test_path, transform=transform)
     
     train_data_loader = DataLoader(dataset=train_data, 
                               batch_size=batch_size,
@@ -100,14 +77,17 @@ def main():
                                 shuffle=False)
 
     model = UpscaleModel2()
-    
+
     if model_path.exists():
         print("loading existing model")
         model.load_state_dict(torch.load(model_path))
     
     #loss_fn = VGGPerceptualLoss().to(device)
-    loss_fn = nn.MSELoss()
-    
+    #loss_fn = nn.MSELoss()
+    #loss_fn = SSIMLoss()
+    loss_fn = CombinedLoss(loss_shift=1)
+    psnr = PSNR()
+    ssim = SSIM()
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=learning_rate,
                                  weight_decay=weight_decay)
@@ -124,12 +104,16 @@ def main():
             loss_fn=loss_fn,
             optimizer=optimizer,
             device=device,
+            psnr=psnr,
+            ssim=ssim,
             logger=train_statistics_logger
         )
         test_step(data_loader=test_data_loader,
             model=model,
             loss_fn=loss_fn,
             device=device,
+            psnr=psnr,
+            ssim=ssim,
             logger=test_statistics_logger
         )
 
@@ -140,10 +124,10 @@ def main():
 
     # Save the model state dict and statistics
     print(f"Saving model to: {model_path}")
-    train_statistics_logger.save_to_json(model_name + '_train_log.json')
-    train_statistics_logger.save_to_csv(model_name + '_train_log.csv')
-    test_statistics_logger.save_to_json(model_name + '_test_log.json')
-    test_statistics_logger.save_to_csv(model_name + '_test_log.csv')
+    train_statistics_logger.save_to_json(log_dir + model_name + '_train_log.json')
+    train_statistics_logger.save_to_csv(log_dir + model_name + '_train_log.csv')
+    test_statistics_logger.save_to_json(log_dir + model_name + '_test_log.json')
+    test_statistics_logger.save_to_csv(log_dir + model_name + '_test_log.csv')
     torch.save(obj=model.state_dict(),
             f=model_path)
     
@@ -154,14 +138,16 @@ def train_step(model: torch.nn.Module,
                loss_fn: torch.nn.Module,
                optimizer: torch.optim.Optimizer,
                logger: TrainingStatisticsLogger,
-               ssim = SSIM(),
-               psnr = PSNR(),
+               ssim,
+               psnr,
                device: torch.device = "cpu"):
     train_loss = 0
     psnr_acc = 0
     ssim_acc = 0
     model.train()
     model.to(device)
+    loss_fn.to(device)
+    #ssim.to(device).eval()
     start_time = timer()
     for batch, y in tqdm.tqdm(enumerate(data_loader)):
         # Send data to GPU
@@ -174,9 +160,9 @@ def train_step(model: torch.nn.Module,
         # Calculate loss
         loss = loss_fn(y_pred, y)
         
-        psnr_acc += psnr(y_pred, y)
+        psnr_acc += psnr(y_pred, y).item()
         
-        ssim_acc += ssim(y_pred, y)
+        ssim_acc += ssim(y_pred, y).item()
 
         train_loss += loss
 
@@ -190,22 +176,27 @@ def train_step(model: torch.nn.Module,
     end_time = timer()
     total_time = end_time - start_time
     train_loss /= len(data_loader)
-    psnr /= len(data_loader)
-    ssim /= len(data_loader)
+    psnr_acc /= len(data_loader)
+    ssim_acc /= len(data_loader)
     
-    logger.log_statistics(loss=train_loss, epoch_duration=total_time, ssim=ssim, psnr=psnr)
+    logger.log_statistics(loss=train_loss, epoch_duration=total_time, ssim=ssim_acc, psnr=psnr_acc)
     
-    print(f"Train loss: {train_loss:.5f}, SSIM: {ssim:.5f}, PSNR: {psnr:.5f}")
+    print(f"Train loss: {train_loss:.5f}, SSIM: {ssim_acc:.5f}, PSNR: {psnr_acc:.5f}")
 
 def test_step(data_loader: torch.utils.data.DataLoader,
               model: torch.nn.Module,
               loss_fn: torch.nn.Module,
               logger: TrainingStatisticsLogger,
-              ssim = SSIM(),
-              psnr = PSNR(),
+              ssim,
+              psnr,
               device: torch.device = "cpu"):
     test_loss = 0
+    psnr_acc = 0
+    ssim_acc = 0
     model.to(device)
+    loss_fn.to(device)
+    #ssim.to(device).eval()
+    #psnr.to(device).eval()
     model.eval() # put model in eval mode
     # Turn on inference context manager
     with torch.inference_mode():
@@ -220,21 +211,21 @@ def test_step(data_loader: torch.utils.data.DataLoader,
             
             # Calculate loss and accuracy
             test_loss += loss_fn(test_pred, y)
-      
-            psnr_acc += psnr(test_pred, y)
+
+            psnr_acc += psnr(test_pred, y).item()
             
-            ssim_acc += ssim(test_pred, y)
+            ssim_acc += ssim(test_pred, y).item()
         
         end= timer()
         # Adjust metrics and print out
         total_time = end - start
         test_loss /= len(data_loader)
-        psnr /= len(data_loader)
-        ssim /= len(data_loader)
+        psnr_acc /= len(data_loader)
+        ssim_acc /= len(data_loader)
 
-        logger.log_statistics(loss=test_loss, epoch_duration=total_time, ssim=ssim, psnr=psnr)
+        logger.log_statistics(loss=test_loss, epoch_duration=total_time, ssim=ssim_acc, psnr=psnr_acc)
         
-        print(f"Test loss: {test_loss:.5f}, SSIM: {ssim:.5f}, PSNR: {psnr:.5f}")
+        print(f"Test loss: {test_loss:.5f}, SSIM: {ssim_acc:.5f}, PSNR: {psnr_acc:.5f}")
 
 if __name__ == '__main__':
     main()

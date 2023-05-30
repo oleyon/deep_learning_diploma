@@ -57,11 +57,11 @@ class VGGPerceptualLoss(nn.Module):
 class CombinedLoss(nn.Module):
     def __init__(self, ssim_window_size=11, ssim_sigma=1.5, ssim_channels=3, vgg_resize=True, loss_shift=0.5) -> None:
         super(CombinedLoss, self).__init__()
-        self.ssim_loss = SSIM(ssim_window_size, ssim_sigma, ssim_channels)
+        self.ssim_loss = SSIMLoss(ssim_window_size, ssim_sigma, ssim_channels)
         self.vgg_loss = VGGPerceptualLoss(vgg_resize)
         self.loss_shift = loss_shift
     
     def forward(self, input, target):
         ssim_loss = self.ssim_loss(input, target)
-        vgg_loss = self.ssim_loss(input, target)
+        vgg_loss = self.vgg_loss(input, target)
         return vgg_loss + self.loss_shift * ssim_loss

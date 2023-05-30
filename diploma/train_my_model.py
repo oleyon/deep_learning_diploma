@@ -61,8 +61,8 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     #device = torch.device("cpu")
     # Set the path to the folder containing your unlabeled images
-    train_path = "diploma/data/DIV2K/train_HR"
-    test_path = "diploma/data/DIV2K/valid_HR"
+    train_path = "diploma/data/DIV2K/train"
+    test_path = "diploma/data/DIV2K/valid"
 
     # Define the transformation to be applied to each image
     transform = transforms.Compose([
@@ -104,7 +104,7 @@ def main():
     
     train_time_start_on_gpu = timer()
 
-    epochs = 5
+    epochs = 2
     for epoch in range(epochs):
         print(f"Epoch: {epoch}\n---------")
         train_step(data_loader=train_data_loader, 
