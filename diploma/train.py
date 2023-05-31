@@ -4,7 +4,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import tqdm
 import yaml
-from autoencoder_upsampler_2 import AutoencoderUpsampler2
+#from autoencoder_upsampler_2 import AutoencoderUpsampler2
+from residual_upsampler_2 import ResidualUpsampler2
 from metrics import PSNR, SSIM
 from train_statistics import TrainingStatisticsLogger
 from vgg_loss import *
@@ -77,7 +78,8 @@ def main():
                                 num_workers=1,
                                 shuffle=False)
 
-    model = AutoencoderUpsampler2()
+    #model = AutoencoderUpsampler2()
+    model = ResidualUpsampler2()
 
     if model_path.exists():
         print("loading existing model")
@@ -86,7 +88,7 @@ def main():
     #loss_fn = VGGPerceptualLoss().to(device)
     #loss_fn = nn.MSELoss()
     #loss_fn = SSIMLoss()
-    loss_fn = VGGPerceptualLoss()#CombinedLoss(loss_shift=1)
+    loss_fn = VGG('22').to(device) #CombinedLoss(loss_shift=1)
     psnr = PSNR()
     ssim = SSIM()
     optimizer = torch.optim.Adam(model.parameters(),

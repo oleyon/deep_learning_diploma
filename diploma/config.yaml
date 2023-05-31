@@ -1,6 +1,6 @@
 model:
-  name: autoencoder_upsampler_re2_vgg
-  path: diploma/models/autoencoder_upsampler_re2_vgg.pth
+  name: autoencoder_upsampler_res_blocks_2
+  path: diploma/models/autoencoder_upsampler_res_blocks_2.pth
   #input_size: 256
   hidden_size: 512
   #output_size: 10
@@ -8,7 +8,7 @@ model:
 
 train:
   device: cuda
-  epochs: 50
+  epochs: 30
   learning_rate: 0.0001
   batch_size: 16
   optimizer:
