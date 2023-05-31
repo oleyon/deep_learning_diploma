@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import tqdm
 import yaml
-from autoencoder_upsampler import AutoencoderUpsampler
+from autoencoder_upsampler_2 import AutoencoderUpsampler2
 from metrics import PSNR, SSIM
 from train_statistics import TrainingStatisticsLogger
 from vgg_loss import *
@@ -77,7 +77,7 @@ def main():
                                 num_workers=1,
                                 shuffle=False)
 
-    model = AutoencoderUpsampler()
+    model = AutoencoderUpsampler2()
 
     if model_path.exists():
         print("loading existing model")
@@ -86,7 +86,7 @@ def main():
     #loss_fn = VGGPerceptualLoss().to(device)
     #loss_fn = nn.MSELoss()
     #loss_fn = SSIMLoss()
-    loss_fn = CombinedLoss(loss_shift=1)
+    loss_fn = VGGPerceptualLoss()#CombinedLoss(loss_shift=1)
     psnr = PSNR()
     ssim = SSIM()
     optimizer = torch.optim.Adam(model.parameters(),
@@ -125,10 +125,10 @@ def main():
 
     # Save the model state dict and statistics
     print(f"Saving model to: {model_path}")
-    train_statistics_logger.save_to_json(log_dir + model_name + '_train_log.json')
-    train_statistics_logger.save_to_csv(log_dir + model_name + '_train_log.csv')
-    test_statistics_logger.save_to_json(log_dir + model_name + '_test_log.json')
-    test_statistics_logger.save_to_csv(log_dir + model_name + '_test_log.csv')
+    train_statistics_logger.save_to_json(log_dir + model_name + '_train_log.json', append=True)
+    train_statistics_logger.save_to_csv(log_dir + model_name + '_train_log.csv', append=True)
+    test_statistics_logger.save_to_json(log_dir + model_name + '_test_log.json', append=True)
+    test_statistics_logger.save_to_csv(log_dir + model_name + '_test_log.csv', append=True)
     torch.save(obj=model.state_dict(),
             f=model_path)
     

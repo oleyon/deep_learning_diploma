@@ -21,8 +21,8 @@ class VGGPerceptualLoss(nn.Module):
         blocks.append(models.vgg16(pretrained=True).features[9:16].eval())
         blocks.append(models.vgg16(pretrained=True).features[16:23].eval())
         for bl in blocks:
-            for p in bl.parameters():
-                p.requires_grad = False
+           for p in bl.parameters():
+              p.requires_grad = False
         self.blocks = torch.nn.ModuleList(blocks)
         self.transform = torch.nn.functional.interpolate
         self.resize = resize
@@ -35,9 +35,9 @@ class VGGPerceptualLoss(nn.Module):
             target = target.repeat(1, 3, 1, 1)
         input = (input-self.mean) / self.std
         target = (target-self.mean) / self.std
-        if self.resize:
-            input = self.transform(input, mode='bilinear', size=(224, 224), align_corners=False)
-            target = self.transform(target, mode='bilinear', size=(224, 224), align_corners=False)
+        # if self.resize:
+        #     input = self.transform(input, mode='bilinear', size=(224, 224), align_corners=False)
+        #     target = self.transform(target, mode='bilinear', size=(224, 224), align_corners=False)
         loss = 0.0
         x = input
         y = target
@@ -65,3 +65,28 @@ class CombinedLoss(nn.Module):
         ssim_loss = self.ssim_loss(input, target)
         vgg_loss = self.vgg_loss(input, target)
         return vgg_loss + self.loss_shift * ssim_loss
+
+class VGGPerceptualLoss1(nn.Module):
+    def __init__(self, feature_layers=[3, 8, 15, 22], device="cuda"):
+        super(VGGPerceptualLoss1, self).__init__()
+        vgg_model = models.vgg19(pretrained=True).features.to(device)
+        self.vgg = nn.Sequential(*list(vgg_model.children())[:max(feature_layers)+1])
+        self.feature_layers = feature_layers
+        self.loss = nn.L1Loss()
+        self.device = device
+
+    def forward(self, input, target):
+        input = input.to(self.device)
+        target = target.to(self.device)
+
+        input_features = self.vgg(input)
+        target_features = self.vgg(target)
+
+        perceptual_loss = 0
+
+        for layer in self.feature_layers:
+            input_feat = input_features[layer]
+            target_feat = target_features[layer]
+            perceptual_loss += self.loss(input_feat, target_feat)
+
+        return perceptual_loss

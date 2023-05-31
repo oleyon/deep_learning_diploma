@@ -48,16 +48,18 @@ class TrainingStatisticsLogger:
                 'SSIM': self.ssim,
                 'PSNR': self.psnr}
 
-        with open(filename, mode) as jsonfile:
-            if append and path.exists() and path.stat().st_size > 0:
+        if append and path.exists() and path.stat().st_size > 0:
+            with open(filename, 'r') as jsonfile:
                 existing_data = json.load(jsonfile)
                 existing_data['Epoch'].extend(data['Epoch'])
                 existing_data['Loss'].extend(data['Loss'])
                 existing_data['Training Time'].extend(data['Training Time'])
                 existing_data['SSIM'].extend(data['SSIM'])
                 existing_data['PSNR'].extend(data['PSNR'])
+            with open(filename, 'w') as jsonfile:
                 json.dump(existing_data, jsonfile)
-            else:
+        else:
+            with open(filename, mode) as jsonfile:
                 json.dump(data, jsonfile)
 
     def load_from_csv(self, filename):
