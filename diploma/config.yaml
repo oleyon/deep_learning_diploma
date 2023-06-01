@@ -8,9 +8,9 @@ model:
 
 train:
   device: cuda
-  epochs: 30
-  learning_rate: 0.0001
-  batch_size: 16
+  epochs: 150
+  learning_rate: 0.00005
+  batch_size: 32
   optimizer:
     name: Adam
     weight_decay: 0.00001
