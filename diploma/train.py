@@ -88,7 +88,8 @@ def main():
     #loss_fn = VGGPerceptualLoss().to(device)
     #loss_fn = nn.MSELoss()
     #loss_fn = SSIMLoss()
-    loss_fn = VGG('22').to(device) #CombinedLoss(loss_shift=1)
+    #loss_fn = VGG('22').to(device) #CombinedLoss(loss_shift=1)
+    loss_fn = VGGWithSSIM2('22').to(device)
     psnr = PSNR()
     ssim = SSIM()
     optimizer = torch.optim.Adam(model.parameters(),

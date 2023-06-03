@@ -175,3 +175,35 @@ class VGGWithSSIM(nn.Module):
         x = self.sub_mean(x)
         x = self.vgg(x)
         return x
+
+
+class VGGWithSSIM2(nn.Module):
+    def __init__(self, conv_index, rgb_range=1):
+        super(VGGWithSSIM2, self).__init__()
+        vgg_features = models.vgg19(pretrained=True).features
+        modules = [m for m in vgg_features]
+        if conv_index.find('22') >= 0:
+            self.vgg = nn.Sequential(*modules[:8])
+        elif conv_index.find('54') >= 0:
+            self.vgg = nn.Sequential(*modules[:35])
+        
+        for p in self.parameters():
+            p.requires_grad = False
+        self.loss_fn = nn.L1Loss()
+
+    def forward(self, sr, hr):
+        def _forward(x):
+            x = self.vgg(x)
+            return x
+            
+        vgg_sr = _forward(sr)
+        #with torch.inference_mode():
+        vgg_hr = _forward(hr)
+
+        loss = self.loss_fn(vgg_sr, vgg_hr)
+
+        return loss
+    
+    def forward1(self, x):
+        x = self.vgg(x)
+        return x
