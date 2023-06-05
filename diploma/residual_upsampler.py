@@ -37,22 +37,16 @@ class UpsampleBlock(nn.Module):
                               stride=1,
                               padding=1)
         self.pixel_shuffle = nn.PixelShuffle(2)
-        self.conv_2 = nn.Conv2d(in_channels=in_channels,
-                              out_channels=in_channels,
-                              kernel_size=3,
-                              stride=1,
-                              padding=1)
-        #self.bn = nn.BatchNorm2d(num_features=in_channels)
-        #self.relu = nn.ReLU()
+        self.relu = nn.ReLU()
     
     def forward(self, x):
         x = self.conv_1(x)
         x = self.pixel_shuffle(x)
-        x = self.conv_2(x)
+        x = self.relu(x)
         return x
 
 class ResidualUpsampler(nn.Module):
-    def __init__(self, in_channels=3, hidden_layers=64, res_blocks_number=4, upsample_factor=4):
+    def __init__(self, in_channels=3, hidden_layers=64, res_blocks_number=8, upsample_factor=4):
         super(ResidualUpsampler, self).__init__()
         
         self.res_blocks_number = res_blocks_number
@@ -68,9 +62,9 @@ class ResidualUpsampler(nn.Module):
         
         self.final_conv = nn.Conv2d(in_channels=hidden_layers,
                                     out_channels=in_channels,
-                                    kernel_size=5,
+                                    kernel_size=9,
                                     stride=1,
-                                    padding=2)
+                                    padding=4)
 
     def forward(self, x):
         x = self.start_conv(x)

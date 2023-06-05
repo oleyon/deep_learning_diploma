@@ -1,36 +1,26 @@
 model:
   name: autoencoder_upsampler_res_blocks_2_without_mean
-  path: diploma/models/autoencoder_upsampler_res_blocks_2_without_mean.pth
-  #input_size: 256
-  hidden_size: 512
-  #output_size: 10
-  #upsample_factor: 4
+  path: models/
+  extension: .pth
+  in_channels: 3
+  hidden_layers: 64
+  res_blocks_number: 8
+  upsample_factor: 4
 
 train:
   device: cuda
   epochs: 20
-  learning_rate: 0.00005
+  learning_rate: 0.00001
   batch_size: 16
   optimizer:
     name: Adam
     weight_decay: 0.00001
+  image_crop_size: 256
 
 dataset:
   name: DIV2K
-  data_path: diploma/data/DIV2K
-  transform:
-    - RandomHorizontalFlip
-    - RandomCrop:
-        size: 256
-    - ToTensor
-
-
-
-# scheduler:
-#   name: StepLR
-#   step_size: 10
-#   gamma: 0.1
+  data_path: data/DIV2K
 
 logging:
-  log_dir: diploma/log/
-  save_dir: /path/to/checkpoints
+  log_dir: log/
+  append: true

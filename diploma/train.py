@@ -4,39 +4,38 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import tqdm
 import yaml
-#from autoencoder_upsampler_2 import AutoencoderUpsampler2
-from residual_upsampler_2 import ResidualUpsampler2
+from image_dataset import UpsampleImageDataset
+from residual_upsampler import ResidualUpsampler
 from metrics import PSNR, SSIM
-from train_statistics import TrainingStatisticsLogger
-from vgg_loss import *
+from statistics import TrainingStatisticsLogger
 from image_dataset import ImageDataset
 from autoencoder_upscale_model import AutoencoderUpscaleModel
-from my_upscale_model import UpscaleModel
 from timeit import default_timer as timer
 from pathlib import Path
 import os
 import torch.nn.functional as F
-from my_upscale_model2 import UpscaleModel2
 from custom_loss import *
-
+import os
     
 def print_train_time(start: float, end: float, device: torch.device = None):
     total_time = end - start
     print(f"Train time on {device}: {total_time:.3f} seconds")
     return total_time
 
-def downsample_image(image, factor=2):
-    # Calculate the downsampled size
-    height, width = image.shape[2:]
-    new_height, new_width = height // factor, width // factor
+# def downsample_image(image, factor=2):
+#     # Calculate the downsampled size
+#     height, width = image.shape[2:]
+#     new_height, new_width = height // factor, width // factor
 
-    # Downsample the image using bilinear interpolation
-    downsampled_image = F.interpolate(image, size=(new_height, new_width), mode='bilinear', align_corners=False)
+#     # Downsample the image using bilinear interpolation
+#     downsampled_image = F.interpolate(image, size=(new_height, new_width), mode='bilinear', align_corners=False)
 
-    return downsampled_image
+#     return downsampled_image
 
 def main():
-    with open('diploma/config.yaml', 'r') as yamlfile:
+    os.chdir('diploma')
+    
+    with open('config.yaml', 'r') as yamlfile:
         config = yaml.safe_load(yamlfile)
 
     model_path = Path(config['model']['path'])
@@ -48,48 +47,61 @@ def main():
     train_path = dataset_path + '/train'
     test_path = dataset_path + '/valid'
     device = config['train']['device']
-    #upsample_factor = config['model']['upsample_factor']
     weight_decay = config['train']['optimizer']['weight_decay']
     log_dir = config['logging']['log_dir']
+    in_channels = config['model']['in_channels']
+    hidden_layers = config['model']['hidden_layers']
+    res_blocks_number = config['model']['res_blocks_number']
+    upsample_factor = config['model']['upsample_factor']
+    log_append = config['logging']['append']
+    image_crop_size = config['train']['image_crop_size']
+    model_ext = config['model']['extension']
     
-    model_path.parent.mkdir(parents=True,
+    model_full_path = model_path / (model_name + model_ext)
+    model_full_path.parent.mkdir(parents=True,
                     exist_ok=True)
 
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Define the transformation to be applied to each image
     transform = transforms.Compose([
-        transforms.RandomCrop(config['dataset']['transform'][1]['RandomCrop']['size']),
+        transforms.RandomCrop(image_crop_size),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor()
     ])
 
     # Create the ImageFolder dataset
-    train_data = ImageDataset(train_path, transform=transform)
-    test_data = ImageDataset(test_path, transform=transform)
+    train_data = UpsampleImageDataset(root_dir=train_path,
+                              transform=transform,
+                              upsample_factor=upsample_factor)
+    test_data = UpsampleImageDataset(root_dir=test_path,
+                             transform=transform,
+                             upsample_factor=upsample_factor)
     
-    train_data_loader = DataLoader(dataset=train_data, 
-                              batch_size=batch_size,
-                              num_workers=1,
-                              shuffle=True) 
+    train_data_loader = DataLoader(dataset=train_data,
+                                batch_size=batch_size,
+                                num_workers=1,
+                                shuffle=True)
 
-    test_data_loader = DataLoader(dataset=test_data, 
+    test_data_loader = DataLoader(dataset=test_data,
                                 batch_size=batch_size,
                                 num_workers=1,
                                 shuffle=False)
 
-    #model = AutoencoderUpsampler2()
-    model = ResidualUpsampler2()
+    model = ResidualUpsampler(in_channels=in_channels,
+                              hidden_layers=hidden_layers,
+                              res_blocks_number=res_blocks_number,
+                              upsample_factor=upsample_factor)
 
-    if model_path.exists():
+    if model_full_path.exists():
         print("loading existing model")
-        model.load_state_dict(torch.load(model_path))
+        model.load_state_dict(torch.load(model_full_path))
     
     #loss_fn = VGGPerceptualLoss().to(device)
     #loss_fn = nn.MSELoss()
     #loss_fn = SSIMLoss()
     #loss_fn = VGG('22').to(device) #CombinedLoss(loss_shift=1)
-    loss_fn = VGGWithSSIM2('22').to(device)
+    loss_fn = VGGL1Loss('22').to(device)
     psnr = PSNR()
     ssim = SSIM()
     optimizer = torch.optim.Adam(model.parameters(),
@@ -127,13 +139,13 @@ def main():
                                                 device=device)
 
     # Save the model state dict and statistics
-    print(f"Saving model to: {model_path}")
-    train_statistics_logger.save_to_json(log_dir + model_name + '_train_log.json', append=True)
-    train_statistics_logger.save_to_csv(log_dir + model_name + '_train_log.csv', append=True)
-    test_statistics_logger.save_to_json(log_dir + model_name + '_test_log.json', append=True)
-    test_statistics_logger.save_to_csv(log_dir + model_name + '_test_log.csv', append=True)
+    print(f"Saving model to: {model_full_path}")
+    train_statistics_logger.save_to_json(log_dir + model_name + '_train_log.json', append=log_append)
+    train_statistics_logger.save_to_csv(log_dir + model_name + '_train_log.csv', append=log_append)
+    test_statistics_logger.save_to_json(log_dir + model_name + '_test_log.json', append=log_append)
+    test_statistics_logger.save_to_csv(log_dir + model_name + '_test_log.csv', append=log_append)
     torch.save(obj=model.state_dict(),
-            f=model_path)
+            f=model_full_path)
     
     
 
@@ -153,9 +165,8 @@ def train_step(model: torch.nn.Module,
     loss_fn.to(device)
     #ssim.to(device).eval()
     start_time = timer()
-    for batch, y in tqdm.tqdm(enumerate(data_loader)):
+    for X, y in tqdm.tqdm(data_loader):
         # Send data to GPU
-        X = downsample_image(y, factor=4)
         X, y = X.to(device), y.to(device)
 
         # Forward pass
@@ -199,14 +210,11 @@ def test_step(data_loader: torch.utils.data.DataLoader,
     ssim_acc = 0
     model.to(device)
     loss_fn.to(device)
-    #ssim.to(device).eval()
-    #psnr.to(device).eval()
     model.eval() # put model in eval mode
     # Turn on inference context manager
     with torch.inference_mode():
         start = timer()
-        for y in data_loader:
-            X = downsample_image(y, factor=4)
+        for X, y in data_loader:
             # Send data to GPU
             X, y = X.to(device), y.to(device)
             

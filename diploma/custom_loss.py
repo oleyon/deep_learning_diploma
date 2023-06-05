@@ -55,43 +55,6 @@ class VGGPerceptualLoss(nn.Module):
                 loss += torch.nn.functional.l1_loss(gram_x, gram_y)
         return loss
 
-class CombinedLoss(nn.Module):
-    def __init__(self, ssim_window_size=11, ssim_sigma=1.5, ssim_channels=3, vgg_resize=True, loss_shift=0.5) -> None:
-        super(CombinedLoss, self).__init__()
-        self.ssim_loss = SSIMLoss(ssim_window_size, ssim_sigma, ssim_channels)
-        self.vgg_loss = VGGPerceptualLoss(vgg_resize)
-        self.loss_shift = loss_shift
-    
-    def forward(self, input, target):
-        ssim_loss = self.ssim_loss(input, target)
-        vgg_loss = self.vgg_loss(input, target)
-        return vgg_loss + self.loss_shift * ssim_loss
-
-class VGGPerceptualLoss1(nn.Module):
-    def __init__(self, feature_layers=[3, 8, 15, 22], device="cuda"):
-        super(VGGPerceptualLoss1, self).__init__()
-        vgg_model = models.vgg19(pretrained=True).features.to(device)
-        self.vgg = nn.Sequential(*list(vgg_model.children())[:max(feature_layers)+1])
-        self.feature_layers = feature_layers
-        self.loss = nn.L1Loss()
-        self.device = device
-
-    def forward(self, input, target):
-        input = input.to(self.device)
-        target = target.to(self.device)
-
-        input_features = self.vgg(input)
-        target_features = self.vgg(target)
-
-        perceptual_loss = 0
-
-        for layer in self.feature_layers:
-            input_feat = input_features[layer]
-            target_feat = target_features[layer]
-            perceptual_loss += self.loss(input_feat, target_feat)
-
-        return perceptual_loss
-
 class VGG(nn.Module):
     def __init__(self, conv_index, rgb_range=1):
         super(VGG, self).__init__()
@@ -121,11 +84,6 @@ class VGG(nn.Module):
         loss = F.mse_loss(vgg_sr, vgg_hr)
 
         return loss
-    
-    def forward1(self, x):
-        x = self.sub_mean(x)
-        x = self.vgg(x)
-        return x
 
 class MeanShift(nn.Conv2d):
     def __init__(
@@ -170,16 +128,11 @@ class VGGWithSSIM(nn.Module):
         loss = self.loss_fn(vgg_sr, vgg_hr)
 
         return loss
-    
-    def forward1(self, x):
-        x = self.sub_mean(x)
-        x = self.vgg(x)
-        return x
 
 
-class VGGWithSSIM2(nn.Module):
+class VGGL1Loss(nn.Module):
     def __init__(self, conv_index, rgb_range=1):
-        super(VGGWithSSIM2, self).__init__()
+        super(VGGL1Loss, self).__init__()
         vgg_features = models.vgg19(pretrained=True).features
         modules = [m for m in vgg_features]
         if conv_index.find('22') >= 0:
@@ -189,21 +142,11 @@ class VGGWithSSIM2(nn.Module):
         
         for p in self.parameters():
             p.requires_grad = False
-        self.loss_fn = nn.L1Loss()
+        #self.loss_fn = nn.L1Loss()
+        self.loss_fn = SSIMLoss(channels=128)
 
     def forward(self, sr, hr):
-        def _forward(x):
-            x = self.vgg(x)
-            return x
-            
-        vgg_sr = _forward(sr)
-        #with torch.inference_mode():
-        vgg_hr = _forward(hr)
-
+        vgg_sr = self.vgg(sr)
+        vgg_hr = self.vgg(hr)
         loss = self.loss_fn(vgg_sr, vgg_hr)
-
         return loss
-    
-    def forward1(self, x):
-        x = self.vgg(x)
-        return x
