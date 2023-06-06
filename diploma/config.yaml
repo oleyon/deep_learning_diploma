@@ -1,5 +1,5 @@
 model:
-  name: autoencoder_upsampler_res_blocks_2_without_mean
+  name: residual_upsampler_slav
   path: models/
   extension: .pth
   in_channels: 3
@@ -10,7 +10,7 @@ model:
 train:
   device: cuda
   epochs: 20
-  learning_rate: 0.00001
+  learning_rate: 0.0001
   batch_size: 16
   optimizer:
     name: Adam
